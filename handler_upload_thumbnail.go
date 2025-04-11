@@ -33,9 +33,10 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 
 	// TODO: implement the upload here
 	const maxMemory = 10 << 20
-	r.ParseMultipartForm(maxMemory)
+	err = r.ParseMultipartForm(maxMemory)
 	file, header, err := r.FormFile("thumbnail")
 	mediaType := header.Header.Get("Content-Type")
+	fmt.Println(mediaType)
 	data, err := io.ReadAll(file)
 
 	metadata, err := cfg.db.GetVideo(videoID)
@@ -51,8 +52,8 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 
 	videoThumbnails[videoID] = thumbnail
 
-	*metadata.ThumbnailURL = fmt.Sprintf("http://localhost:%v/api/thumbnails/%v", cfg.port, videoID)
-	cfg.db.UpdateVideo(metadata)
+	// *metadata.ThumbnailURL = fmt.Sprintf("http://localhost:%v/api/thumbnails/%v", cfg.port, videoID)
+	// cfg.db.UpdateVideo(metadata)
 
 	respondWithJSON(w, http.StatusOK, metadata)
 }
