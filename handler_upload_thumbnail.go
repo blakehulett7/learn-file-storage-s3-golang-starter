@@ -54,5 +54,5 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	*metadata.ThumbnailURL = fmt.Sprintf("http://localhost:%v/api/thumbnails/%v", cfg.port, videoID)
 	cfg.db.UpdateVideo(metadata)
 
-	respondWithJSON(w, http.StatusOK, struct{}{})
+	respondWithJSON(w, http.StatusOK, metadata)
 }
