@@ -38,10 +38,21 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	mediaType := header.Header.Get("Content-Type")
 	data, err := io.ReadAll(file)
 
-	video, err := cfg.db.GetVideo(videoID)
-	if video.UserID != userID {
+	metadata, err := cfg.db.GetVideo(videoID)
+	if metadata.UserID != userID {
 		respondWithJSON(w, http.StatusUnauthorized, struct{}{})
+		return
 	}
+
+	thumbnail := thumbnail{
+		data:      data,
+		mediaType: mediaType,
+	}
+
+	videoThumbnails[videoID] = thumbnail
+
+	*metadata.ThumbnailURL = fmt.Sprintf("http://localhost:%v/api/thumbnails/%v", cfg.port, videoID)
+	cfg.db.UpdateVideo(metadata)
 
 	respondWithJSON(w, http.StatusOK, struct{}{})
 }
