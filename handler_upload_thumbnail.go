@@ -48,13 +48,6 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	thumbnail := thumbnail{
-		data:      data,
-		mediaType: mediaType,
-	}
-
-	videoThumbnails[videoID] = thumbnail
-
 	metadata.ThumbnailURL = &imageCode
 	cfg.db.UpdateVideo(metadata)
 
