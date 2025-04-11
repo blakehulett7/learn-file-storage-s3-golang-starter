@@ -1,10 +1,12 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
 	"github.com/google/uuid"
@@ -36,11 +38,20 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	const maxMemory = 10 << 20
 	err = r.ParseMultipartForm(maxMemory)
 	file, header, err := r.FormFile("thumbnail")
-	mediaType := header.Header.Get("Content-Type")
-	data, err := io.ReadAll(file)
 
-	encoded := base64.StdEncoding.EncodeToString(data)
-	imageCode := fmt.Sprintf("data:%v;base64,%v", mediaType, encoded)
+	mediaType := header.Header.Get("Content-Type")
+	fileExtensions, err := mime.ExtensionsByType(mediaType)
+	fileExtension := fileExtensions[0]
+	filePath := fmt.Sprintf("%v%v", filepath.Join(cfg.assetsRoot, videoIDString), fileExtension)
+
+	newFile, err := os.Create(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer newFile.Close()
+	_, err = io.Copy(newFile, file)
+
+	// data, err := io.ReadAll(file)
 
 	metadata, err := cfg.db.GetVideo(videoID)
 	if metadata.UserID != userID {
@@ -48,7 +59,8 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	metadata.ThumbnailURL = &imageCode
+	thumbnailURL := fmt.Sprintf("http://localhost:%v/%v", cfg.port, filePath)
+	metadata.ThumbnailURL = &thumbnailURL
 	cfg.db.UpdateVideo(metadata)
 
 	respondWithJSON(w, http.StatusOK, metadata)
