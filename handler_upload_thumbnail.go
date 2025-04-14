@@ -39,7 +39,10 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	err = r.ParseMultipartForm(maxMemory)
 	file, header, err := r.FormFile("thumbnail")
 
-	mediaType := header.Header.Get("Content-Type")
+	mediaType, params, err := mime.ParseMediaType(header.Header.Get("Content-Type"))
+	fmt.Println(mediaType)
+	fmt.Println(params)
+
 	fileExtensions, err := mime.ExtensionsByType(mediaType)
 	fileExtension := fileExtensions[0]
 	filePath := fmt.Sprintf("%v%v", filepath.Join(cfg.assetsRoot, videoIDString), fileExtension)
