@@ -51,7 +51,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	fileExtension := fileExtensions[0]
 	nameData := make([]byte, 32)
 	rand.Read(nameData)
-	fileName := base64.StdEncoding.EncodeToString(nameData)
+	fileName := base64.RawURLEncoding.EncodeToString(nameData)
 	filePath := fmt.Sprintf("%v%v", filepath.Join(cfg.assetsRoot, fileName), fileExtension)
 
 	newFile, err := os.Create(filePath)
