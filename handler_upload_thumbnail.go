@@ -39,9 +39,11 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	err = r.ParseMultipartForm(maxMemory)
 	file, header, err := r.FormFile("thumbnail")
 
-	mediaType, params, err := mime.ParseMediaType(header.Header.Get("Content-Type"))
-	fmt.Println(mediaType)
-	fmt.Println(params)
+	mediaType, _, err := mime.ParseMediaType(header.Header.Get("Content-Type"))
+	if mediaType != "image/jpeg" && mediaType != "image/png" {
+		respondWithError(w, http.StatusBadRequest, "only takes jpegs or pngs", err)
+		return
+	}
 
 	fileExtensions, err := mime.ExtensionsByType(mediaType)
 	fileExtension := fileExtensions[0]
