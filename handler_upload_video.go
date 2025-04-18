@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime"
 	"net/http"
 	"os"
+	"os/exec"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
@@ -79,4 +82,22 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	videoURL := fmt.Sprintf("https://%v.s3.%v.amazonaws.com/%v", cfg.s3Bucket, cfg.s3Region, fileKey)
 	metadata.VideoURL = &videoURL
 	cfg.db.UpdateVideo(metadata)
+}
+
+func getVideoAspectRatio(filePath string) (string, error) {
+	cmd := exec.Command("ffprobe", "-v", "error", "-print_format", "json", "-show_streams", filePath)
+
+	buffer := &bytes.Buffer{}
+	cmd.Stdout = buffer
+	cmd.Run()
+	output := struct {
+		Streams []struct {
+			Height int `json:"height"`
+			Width  int `json:"width"`
+		}
+	}{}
+	json.Unmarshal(buffer.Bytes(), &output)
+	video := output.Streams[0]
+	fmt.Println(video)
+	return "", nil
 }
