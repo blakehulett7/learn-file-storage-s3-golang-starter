@@ -99,5 +99,14 @@ func getVideoAspectRatio(filePath string) (string, error) {
 	json.Unmarshal(buffer.Bytes(), &output)
 	video := output.Streams[0]
 	fmt.Println(video)
-	return "", nil
+
+	if video.Width == 16*video.Height/9 {
+		return "16:9", nil
+	}
+
+	if video.Height == 16*video.Width/9 {
+		return "9:16", nil
+	}
+
+	return "other", nil
 }
