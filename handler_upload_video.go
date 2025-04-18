@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
+	"os"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
 	"github.com/google/uuid"
 )
@@ -52,4 +58,25 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusBadRequest, "only takes jpegs or pngs", err)
 		return
 	}
+
+	tmpFile, err := os.CreateTemp("", "tubely-upload.mp4")
+	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
+
+	_, err = io.Copy(tmpFile, file)
+
+	tmpFile.Seek(0, io.SeekStart)
+	bucketName := "tubely-836581"
+
+	nameData := make([]byte, 32)
+	rand.Read(nameData)
+	fileName := base64.RawURLEncoding.EncodeToString(nameData)
+	fileKey := fmt.Sprintf("%v.mp4", fileName)
+
+	cfg.s3Client.PutObject(context.Background(), &s3.PutObjectInput{
+		Bucket:      &bucketName,
+		Key:         &fileKey,
+		Body:        tmpFile,
+		ContentType: &mediaType,
+	})
 }
