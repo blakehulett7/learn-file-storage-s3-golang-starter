@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/service/internal/s3shared/config"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
 
@@ -97,7 +97,7 @@ func main() {
 		port:             port,
 	}
 
-	awsConfig, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(cfg.s3Region))
+	awsConfig, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(s3Region))
 	awsClient := s3.NewFromConfig(awsConfig)
 
 	cfg.s3Client = awsClient
