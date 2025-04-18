@@ -66,7 +66,6 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	_, err = io.Copy(tmpFile, file)
 
 	tmpFile.Seek(0, io.SeekStart)
-	bucketName := "tubely-836581"
 
 	nameData := make([]byte, 32)
 	rand.Read(nameData)
@@ -74,9 +73,13 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	fileKey := fmt.Sprintf("%v.mp4", fileName)
 
 	cfg.s3Client.PutObject(context.Background(), &s3.PutObjectInput{
-		Bucket:      &bucketName,
+		Bucket:      &cfg.s3Bucket,
 		Key:         &fileKey,
 		Body:        tmpFile,
 		ContentType: &mediaType,
 	})
+
+	videoURL := fmt.Sprintf("https://%v.s3.%v.amazonaws.com/%v", cfg.s3Bucket, cfg.s3Region, fileKey)
+	metadata.VideoURL = &videoURL
+	cfg.db.UpdateVideo(metadata)
 }
