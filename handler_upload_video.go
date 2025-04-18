@@ -19,11 +19,6 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	maxUploadSize := int64(1 << 30)
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
-	_, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
-		return
-	}
 
 	videoIDString := r.PathValue("videoID")
 	videoID, err := uuid.Parse(videoIDString)
@@ -50,7 +45,9 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	fmt.Println(r.Form)
 	file, header, err := r.FormFile("video")
+	fmt.Println(file)
 	defer file.Close()
 
 	mediaType, _, err := mime.ParseMediaType(header.Header.Get("Content-Type"))
