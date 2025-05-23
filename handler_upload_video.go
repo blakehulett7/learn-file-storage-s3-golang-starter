@@ -48,9 +48,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Println(r.Form)
 	file, header, err := r.FormFile("video")
-	fmt.Println(file)
 	defer file.Close()
 
 	mediaType, _, err := mime.ParseMediaType(header.Header.Get("Content-Type"))
