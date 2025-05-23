@@ -65,6 +65,13 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 
 	tmpFile.Seek(0, io.SeekStart)
 
+	prefix, err := getVideoAspectRatio(tmpFile.Name())
+	nameData := make([]byte, 32)
+	rand.Read(nameData)
+	fileName := base64.RawURLEncoding.EncodeToString(nameData)
+
+	fileKey := fmt.Sprintf("%v/%v.mp4", prefix, fileName)
+
 	processedVideoFilePath, err := processVideoForFastStart(tmpFile.Name())
 	if err != nil {
 		fmt.Printf("couldn't process video: %v", err)
@@ -77,13 +84,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	defer processedVideo.Close()
-
-	prefix, err := getVideoAspectRatio(tmpFile.Name())
-	nameData := make([]byte, 32)
-	rand.Read(nameData)
-	fileName := base64.RawURLEncoding.EncodeToString(nameData)
-
-	fileKey := fmt.Sprintf("%v/%v.mp4", prefix, fileName)
+	defer os.Remove(processedVideoFilePath)
 
 	cfg.s3Client.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      &cfg.s3Bucket,
