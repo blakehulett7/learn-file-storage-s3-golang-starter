@@ -71,16 +71,17 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	fileName := base64.RawURLEncoding.EncodeToString(nameData)
 
 	fileKey := fmt.Sprintf("%v/%v.mp4", prefix, fileName)
+	fmt.Println(fileKey)
 
 	processedVideoFilePath, err := processVideoForFastStart(tmpFile.Name())
 	if err != nil {
-		fmt.Printf("couldn't process video: %v", err)
+		fmt.Printf("couldn't process video: %v\n", err)
 		return
 	}
 
 	processedVideo, err := os.Open(processedVideoFilePath)
 	if err != nil {
-		fmt.Printf("couldn't open processed video: %v", err)
+		fmt.Printf("couldn't open processed video: %v\n", err)
 		return
 	}
 	defer os.Remove(processedVideoFilePath)
